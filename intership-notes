@@ -1,0 +1,2648 @@
+NEW CONCEPTS:
+
+
+GitHub https://github.com/shivagande26?tab=repositories 
+
+1-API:
+WHAT IS API?
+API stands for Application Programming Interface.
+It’s like a messenger between two software systems.
+send a request to another and get a response back.
+An API lets one application HTTP Status Codes, which tell you the result of an API request.
+1xx — Informational
+
+The server received your request and is still processing it.
+
+🔹 100 Continue: Request is okay so far; keep sending.
+
+🔹 101 Switching Protocols: Server is changing protocol (e.g., HTTP → WebSocket).
+
+🟢 2xx — Success
+
+✅ Means your request was successful.
+
+Code	Meaning	Example Use
+200 OK	Request succeeded	GET /users worked fine
+201 Created	Resource created	POST /users made a new user
+202 Accepted	Request accepted but still processing	Background job started
+204 No Content	Request succeeded but no data to return	After DELETE /user/1
+🟡 3xx — Redirection
+
+↪️ The client must go somewhere else to complete the request.
+
+Code	Meaning	Example Use
+301 Moved Permanently	URL changed forever	Page moved to new location
+302 Found	Temporary redirect	Login redirects to dashboard
+304 Not Modified	No change since last request	Browser can use cached version
+🔴 4xx — Client Errors
+
+❌ The request had a problem (your fault).
+
+Code	Meaning	Example Use
+400 Bad Request	Invalid input	Wrong data format sent
+401 Unauthorized	Not logged in / No valid token	Accessing without login
+403 Forbidden	You’re logged in but not allowed	Trying to delete admin data
+404 Not Found	Resource doesn’t exist	/users/999 not found
+409 Conflict	Request conflicts with current data	Duplicate record
+429 Too Many Requests	Rate limit exceeded	Sent too many API calls
+🔥 5xx — Server Errors
+
+💥 Problem on the server side, not your fault.
+
+Code	Meaning	Example Use
+500 Internal Server Error	Generic server crash	Code bug or failed DB query
+502 Bad Gateway	Invalid response from another server	Load balancer issue
+503 Service Unavailable	Server down or overloaded	Maintenance mode
+504 Gateway Timeout	Server took too long to respond	Timeout in backend service
+
+✅ Summary Tip to Remember:
+
+2xx = Success
+
+3xx = Redirect
+
+4xx = Client Error
+
+5xx = Server Error
+
+
+2-WHAT IS DEPENDENCY?
+A dependency is something your project or code needs to work properly — usually another software, library, or tool.
+A dependency is an external module, package, or library that provides functionality you don’t want to write from scratch.
+   
+
+3-CIDR?
+CIDR stands for Classless Inter-Domain Routing.
+It’s a way to represent IP address ranges efficiently.
+
+Convert /n into subnet mask.
+Each / value means how many bits are used for the network part.
+Example: /24 → first 24 bits are network → 255.255.255.0
+/16 → 255.255.0.0
+/8 → 255.0.0.0
+
+Find number of IPs in the subnet
+Formula:
+Total IPs = 2^(32 - prefix)
+Example:
+/24 → 2^(32−24) = 256 IPs
+/16 → 2^(32−16) = 65,536 IPs
+/28 → 2^(32−28) = 16 IPs
+
+/16 → First 16 bits = network part
+Remaining 16 bits (32–16) = host part
+Total IPs = 2¹⁶ = 65,536
+Usable IPs = 65,534
+
+Use in AWS
+In AWS VPC, you can:
+Create VPC = 10.0.0.0/16
+Then create subnets like:
+Public Subnet → 10.0.1.0/24
+Private Subnet → 10.0.2.0/24
+DB Subnet → 10.0.3.0/24
+Each subnet will have 254 usable IPs.
+
+
+4-What is a Python Virtual Environment?
+A virtual environment (venv) is an isolated workspace where you can install Python packages without affecting your system-wide Python.
+A Python virtual environment lets you have different package versions for different projects, so they don’t conflict.
+To avoid version conflicts between projects.
+🧱 To keep dependencies isolated (each project has its own).
+🔁 To make development and deployment consistent across systems.
+⚙️ Example Scenario
+Project A needs Django 3.2
+Project B needs Django 5.0
+Without a virtual environment, you can’t install both globally.
+With venv, each project can have its own Django version.
+creating virtual envronment in bash  [python -m venv myenv]
+activation [source myenv/bin/activate]
+install package  [pip install flask]
+deactivation  [deactivate]
+📁 Virtual Environment Structure
+myenv/
+ ├── bin/ (or Scripts/) → activation scripts
+ ├── lib/ → installed packages
+ ├── include/ → header files
+ └── pyvenv.cfg → environment config.
+
+
+
+5-CANARY DEPLOYMENT?
+⚙️ How It Works (Step-by-Step):
+Deploy the new version alongside the old version.
+Route a small percentage of traffic (e.g., 5%) to the new version.
+Monitor performance, errors, and logs.
+If stable, increase traffic gradually (10% → 50% → 100%).
+Finally, retire the old version.
+🏗️ Used In:
+Kubernetes (K8s) — using tools like Argo Rollouts or Flagger
+AWS — using CodeDeploy with load balancers
+Jenkins, Spinnaker, GitLab CI/CD pipelines
+
+
+
+6-ALIASE?
+⚙️ What Is a Lambda Alias?
+An Alias is like a pointer to a specific version of your Lambda function.
+Example:
+Version 1 → old code
+Version 2 → new code
+Alias prod → can point to either version
+You can split traffic between both versions (for canary rollout).
+🧱 Basic Idea
+When deploying a new Lambda version:
+Create a new version (v2).
+Update alias (like prod) to split traffic:
+90% to version 1 (old)
+10% to version 2 (new)
+Monitor logs and performance.
+
+
+
+7-COLD & WARM STARTS?
+❄️ What is a Cold Start in AWS Lambda?
+A Cold Start happens when your Lambda function is invoked for the first time (or after being idle for a while).
+AWS must set up the execution environment before running your code — that setup time causes a small delay.
+⚙️ Step-by-Step What Happens During a Cold Start
+Request comes in → no warm Lambda container is available.
+AWS allocates a new container (CPU + memory + runtime).
+It downloads your code package from S3.
+Initializes the runtime (e.g., Python, Node.js, Java).
+Executes the initialization code (outside handler).
+Finally, calls your handler (main function).
+👉 This setup adds latency (100ms–seconds depending on runtime and memory).
+🔥 Warm Start
+When the same Lambda is invoked again soon after a previous run → AWS reuses the existing container.
+That’s a Warm Start (no environment setup needed → very fast).
+📊 Cold vs Warm Start Example
+Type	What Happens	Latency
+❄️ Cold Start	New container created	300–3000 ms
+🔥 Warm Start	Reuses existing container	<100 ms
+🕒 When Cold Starts Happen
+First call after deployment
+Function not invoked for 5–15 minutes
+New version or alias created
+Scaling (when more instances are needed)
+
+
+
+8-PROVISIONED CONCURRENCY?
+⚙️ What is Provisioned Concurrency?
+Provisioned Concurrency keeps a specific number of Lambda instances initialized and ready to respond immediately.
+That means — no cold starts 🚀.
+🧠 Simple Explanation:
+Normally, AWS Lambda creates a new environment only when a request comes (cold start).
+Provisioned Concurrency tells AWS:
+“Keep n Lambda instances warm and ready 24/7 — so users don’t face startup delays.”
+📊 Example:
+Let’s say your Lambda receives spikes of traffic every morning (9 AM).
+Without provisioned concurrency:
+First few users → experience cold start delays (slow).
+With provisioned concurrency:
+AWS keeps, say, 5 instances warm → instant responses for first 5 users.
+🧩 How It Works
+You specify a number of pre-initialized instances.
+AWS pre-warms them (loads code, runtime, and dependencies).
+Requests are sent immediately to these warm instances.
+If traffic increases beyond provisioned number → AWS adds on-demand instances (may cause cold start).
+
+
+
+9-LIFE CYCLE HOOKS?
+🧩 What Are Lifecycle Hooks?
+
+Lifecycle Hooks allow you to pause the Auto Scaling process at specific points
+— so you can run custom actions (like installing software, running scripts, or checking health) before the instance fully joins or leaves the group.
+
+⚙️ Phases in EC2 Auto Scaling Lifecycle
+
+Launch (new instance is being created)
+
+Terminate (instance is being removed)
+
+AWS gives you two hooks:
+
+launching: before the instance is in service
+
+terminating: before the instance is terminated
+
+🕒 Lifecycle Hook Flow (Launch Example)
+
+ASG decides to launch an EC2 instance.
+
+It triggers a Lifecycle Hook (e.g., InstanceLaunching).
+
+Instance enters state: Pending:Wait
+
+Your script (Lambda, SNS, or SQS) runs to configure or verify instance.
+
+Once done, you tell AWS:
+
+aws autoscaling complete-lifecycle-action \
+  --lifecycle-action-result CONTINUE \
+  --instance-id i-12345 \
+  --auto-scaling-group-name myASG
+
+
+Instance becomes InService.
+
+If you don’t send the signal within the timeout (default 1 hour), AWS either continues or abandons (based on your config).
+
+⚙️ Lifecycle Hook Flow (Terminate Example)
+
+ASG decides to terminate an instance.
+
+Instance enters Terminating:Wait state.
+
+Hook runs — gives you time to do cleanup (e.g., upload logs, deregister from load balancer).
+
+You signal AWS to CONTINUE termination.
+
+🧠 Example Use Cases
+
+✅ Run custom bootstrapping scripts
+✅ Register instance with monitoring or config management
+✅ Deregister instance from ELB before shutdown
+✅ Back up data or logs before termination
+
+
+
+
+10-🛡️ What is a Bastion Host (Jump Server)?
+
+A Bastion Host is a secure server used to access private resources (like EC2 instances in private subnets) inside your VPC.
+It acts as a bridge between the public internet and your private network.
+Your Laptop → Bastion Host → Private EC2
+                Internet
+                    │
+           ┌────────────────┐
+           │  Bastion Host          │ (Public Subnet, Public IP)
+           └────────────────┘
+                │ SSH
+ ┌──────────────────────────────────────────┐
+ │               VPC                        │
+ │  ┌────────────┬────────────┬───────────┐   │
+ │  │ Frontend       │ Backend                  │ Database  │                       │
+ │  │ (EC2)                │ (EC2)                         │ (RDS)     │            │
+ │  │ Private IP   │ Private IP             │ Private IP│                     │
+ │  └────────────┴────────────┴───────────┘       │
+ └──────────────────────────────────────────┘
+
+
+🧠 Simple Example
+
+Imagine your AWS VPC:
+
+You have private EC2 instances (no public IPs).
+
+You still need to SSH or RDP into them for maintenance.
+
+👉 You can’t access them directly from the internet.
+So you create a Bastion Host in a public subnet — with a public IP.
+Then:
+
+You SSH into the Bastion Host.
+
+From there, you SSH into the private instances.
+
+✅ This keeps private instances safe from direct internet exposure.
+
+🔐 Security Group Configuration
+Bastion Host SG:
+
+Inbound: Allow SSH (22) from your IP (e.g., your office).
+
+Outbound: Allow all traffic to private subnet.
+
+Private Instance SG:
+
+Inbound: Allow SSH (22) only from Bastion Host SG.
+
+No public access!
+
+🧰 How to Create Bastion Host (AWS Console Steps)
+
+Launch EC2 in a Public Subnet (with Auto-assign Public IP = Yes).
+
+Choose Amazon Linux / Ubuntu.
+
+Create a Security Group:
+
+Inbound: SSH (22) from your trusted IP
+
+Outbound: Allow all
+
+Launch the instance.
+
+Now you have a Bastion Host.
+
+💻 How to Connect to Private Instance
+# Step 1: SSH into Bastion Host
+ssh -i my-key.pem ec2-user@<Bastion-Public-IP>
+
+# Step 2: From Bastion, connect to Private Instance
+ssh -i my-key.pem ec2-user@<Private-Instance-Private-IP>
+
+
+OR use SSH Agent Forwarding from your local machine:
+
+ssh -A -i my-key.pem ec2-user@<Bastion-Public-IP>
+ssh ec2-user@<Private-Instance-Private-IP>
+
+Frontend and Backend EC2 instances are inside private subnets (no public IP).
+Only the Bastion Host (in a public subnet) has a public IP and acts as your secure access point.
+
+🔐 Security Group Setup
+1️⃣ Bastion Host (Public Subnet)
+
+Inbound: SSH (22) from your office/home IP only.
+
+Outbound: Allow traffic to backend/frontend subnet range.
+
+2️⃣ Backend EC2 (Private Subnet)
+
+Inbound: SSH (22) only from Bastion Host Security Group
+
+Inbound: Application port (e.g., 8080) only from frontend SG
+
+No Public IP
+
+3️⃣ Frontend EC2 (Private/Public Subnet)
+
+If public website → Public Subnet (open HTTP/HTTPS)
+
+If internal dashboard → Private Subnet (access via Bastion)
+
+SSH: only from Bastion Host SG
+
+💻 Accessing Servers via Bastion
+
+SSH into the Bastion Host:
+
+ssh -i bastion-key.pem ec2-user@<bastion-public-ip>
+
+
+From Bastion → SSH into Backend:
+
+ssh -i backend-key.pem ec2-user@<backend-private-ip>
+
+
+(Optional) From Bastion → SSH into Frontend:
+
+ssh -i frontend-key.pem ec2-user@<frontend-private-ip>
+
+CONNECTING BACKEND TO RDS
+From EC2 Backend (Recommended)
+
+If your backend EC2 is in the same VPC as RDS:
+
+Example (MySQL)
+mysql -h mydb-instance.cgk8z5xyz123.ap-south-1.rds.amazonaws.com \
+      -u admin -p
+
+
+Then enter your DB password.
+🔒 Security Group Setup
+✅ RDS Security Group
+
+Inbound Rule: Allow port 3306 (for MySQL)
+
+Source: Backend EC2 Security Group
+
+✅ Backend EC2 Security Group
+
+Outbound Rule: Allow traffic to RDS SG (port 3306)
+
+⚠️ Don’t open RDS to the public (0.0.0.0/0) unless for testing.
+
+🧪 Quick Test
+
+From your backend EC2:
+
+telnet mydb-instance.cgk8z5xyz123.ap-south-1.rds.amazonaws.com 3306
+
+
+If it connects, network and SG are fine.
+
+✅ In short:
+
+RDS connection = Your app connects to RDS via endpoint + port + credentials,
+only if security groups, subnet, and VPC networking allow it.
+
+CONNECTION TO RDS FROM FRONTEND
+
+💡 Technically — YES, you can connect frontend to RDS,
+but ❌ you absolutely should NOT in any real-world or production environment.
+
+✅ Correct Architecture
+
+Your frontend should talk to backend APIs,
+and the backend connects to RDS.
+
+Yes — it’s possible to connect your frontend (like React, Angular, etc.) directly to an RDS database if you do the following:
+
+Make your RDS Publicly Accessible = true.
+
+Open RDS Security Group port 3306 (for MySQL) to the internet (0.0.0.0/0).
+
+Use the RDS endpoint, username, and password directly in your frontend code.
+
+💥 Example (❌ not recommended):
+
+const conn = new mysql.createConnection({
+  host: "mydb-instance.abc123.ap-south-1.rds.amazonaws.com",
+  user: "admin",
+  password: "password",
+  database: "mydb"
+});
+
+✅ Summary
+❌ Wrong Way	        ✅ Right Way
+Frontend → RDS          	Frontend → Backend → RDS
+Exposes credentials	Credentials stored safely on server
+Public DB access	        Private VPC access
+Security risk	        Secure and managed
+
+✅ In short:
+
+The frontend never connects directly to RDS.
+It always connects to the backend API, and backend connects to RDS securely within AWS.
+
+
+
+WORKBENCH?
+
+🧩 What is Workbench?
+
+MySQL Workbench is a graphical user interface (GUI) tool to manage MySQL databases.
+
+It lets you:
+
+Design database schemas visually
+
+Write and execute SQL queries
+
+Manage users, permissions, and data
+
+Connect to local or remote databases (like AWS RDS)
+
+Think of it as a visual dashboard for your database — much easier than using the command line.
+
+🔗 Connecting MySQL Workbench to RDS
+1️⃣ Get RDS Details
+
+Endpoint: mydb-instance.abc123.ap-south-1.rds.amazonaws.com
+
+Port: 3306
+
+Username: admin
+
+Password: (your DB password)
+
+Security Group: Make sure your IP is allowed in inbound rules for port 3306
+
+Note: Your RDS can be private. If so, Workbench must run inside the VPC (like on an EC2 instance or via VPN).
+
+2️⃣ Open Workbench
+
+Go to MySQL Connections → + (New Connection)
+
+Connection Name: RDS-Connection
+
+Hostname: Your RDS Endpoint
+
+Port: 3306
+
+Username: admin
+
+Password: Enter password (optionally store it)
+
+Test Connection → If SG & networking are correct, it connects.
+
+3️⃣ Common Issues
+Problem	Cause	Solution
+Can’t connect	RDS SG doesn’t allow your IP	Add your IP to inbound rule for port 3306
+Timeout	RDS in private subnet	Connect via Bastion Host / VPN / EC2
+Access denied	Wrong username/password	Check DB credentials
+4️⃣ Connecting via Bastion Host (if RDS is private)
+
+SSH into Bastion Host:
+
+ssh -i bastion-key.pem ec2-user@<Bastion-Public-IP>
+
+
+Use port forwarding in Workbench:
+
+Set SSH Hostname: Bastion Public IP
+
+SSH Username: ec2-user
+
+SSH Key File: Your .pem
+
+MySQL Hostname: RDS private IP
+
+MySQL Port: 3306
+
+This way, Workbench connects securely to private RDS.
+
+Summary
+
+Workbench = GUI tool for MySQL databases
+
+Use it to query, manage, design, and monitor RDS
+
+Can connect directly if RDS is public or via Bastion if RDS is private
+
+Always ensure Security Groups allow your connection
+
+
+
+
+
+11-TERRAFORM BLOCK? (FOR MORE INFORMATION USE CHATGPT)
+[EXPLIAN TERRAFORM BLOCK IN DETAIL WITH PROVIDER,VERSION,BACKEND,LOCKINGEXAMPLES?]
+
+Provider block → cloud-specific configurations
+
+Version block → Terraform and provider version enforcement
+
+Backend block → remote state storage (mandatory for teams)
+
+Locking → prevents concurrent state modifications
+
+Resource block → actual infrastructure creation
+
+12-TERRAFORM INIT?
+
+terraform init is the first command you run in a new or existing Terraform configuration.
+It initializes the working directory and prepares Terraform to create or manage infrastructure.
+
+Think of it as setting up Terraform to “understand” your project.
+
+2️⃣ What Happens When You Run terraform init
+
+Initialize Backend
+
+If you defined a backend block, Terraform will configure remote state storage.
+
+Example: S3, Terraform Cloud, Azure Storage.
+
+If backend requires locking, it will prepare that too.
+
+Download Providers
+
+Terraform reads your required_providers in terraform {} block.
+
+Downloads the correct provider plugins to .terraform directory.
+
+Initialize Modules
+
+If you are using module blocks (local or remote), Terraform downloads and initializes them.
+
+Prepare Working Directory
+
+Creates hidden .terraform directory with:
+
+Provider plugins
+
+Module cache
+
+Backend configuration
+
+Key Points:
+
+Always run terraform init when:
+
+Starting a new project
+
+Pulling an existing Terraform config from version control
+
+Adding a new provider or module
+
+Only needs to be run once per working directory, unless you change backend/providers.
+
+Creates .terraform directory (contains providers, modules, and backend info).
+
+terraform init is the setup step in Terraform that prepares the directory by configuring backend, downloading providers, and initializing modules.
+Without it, you cannot run plan or apply.
+
+
+
+
+
+12-DESIRED AND CURRENT STATE?
+Desired State = your .tf files (what you want).
+Current State = actual resources + state file (what exists).
+Terraform ensures current state → desired state.
+If someone changes resources manually outside Terraform (drift), Terraform detects it on next plan.
+
+TERRAFORM CONSOLE:
+terraform console
+
+
+13-AWS COGNITO USER MANAGMENT?
+Amazon Cognito = User Management + Authentication + Secure AWS Access
+It provides login/signup, MFA, token management, and temporary AWS credentials for users.
+Amazon Cognito is an AWS service for user authentication, authorization, and user management — meaning it helps apps securely sign up, sign in, and access resources without you having to build that logic from scratch.
+🧩 1️⃣ Create Cognito User Pool (Console)
+Step 1: Open Cognito
+
+Go to AWS Console → search “Cognito” → open it.
+
+Step 2: Create a User Pool
+
+Click “Create user pool”.
+
+Step 3: Configure Sign-in Options
+
+Choose how users sign in:
+
+✅ Username
+
+✅ Email
+
+✅ Phone number
+(You can allow multiple options.)
+
+Example: Email only — users log in using email + password.
+
+Step 4: Security & Password Policy
+
+Choose password requirements (length, characters, etc.).
+
+Enable MFA (Multi-Factor Authentication) if needed.
+
+Optionally, enable account recovery (email or phone).
+
+Step 5: Configure Attributes
+
+Define what info you want to collect during sign-up (e.g., name, email, phone).
+
+Choose required attributes (like email).
+
+Step 6: App Integration
+
+Add an App Client (your frontend or backend application).
+
+Disable “Generate client secret” if it’s a browser app (React, Angular, etc.).
+
+You’ll get an App client ID and Pool ID after creation.
+
+Step 7: Create the Pool
+
+Review → click Create user pool ✅
+
+⚙️ 2️⃣ (Optional) Connect Identity Pool
+
+If your app needs users to access AWS services (like S3 or DynamoDB):
+
+Go to “Federated Identities” → “Create identity pool”
+
+Link it to your user pool.
+
+Assign IAM roles for:
+
+Authenticated users
+
+Unauthenticated (guest) users
+
+🧾 3️⃣ Manage Users
+
+You can:
+
+Add users manually (click “Create user”)
+
+Enable self sign-up (users register through your app)
+
+Disable, delete, or reset users anytime from the console.
+
+🧹 4️⃣ Delete Cognito User Pool
+From AWS Console
+
+Open the Cognito service.
+
+Select the User Pool you want to delete.
+
+Click “Actions” → “Delete user pool”.
+
+Confirm by typing the pool name.
+
+👉 This removes all users and configuration — irreversible.
+
+14-cloud watch metrics?
+CloudWatch Dashboard
+├── Frontend Metrics (EC2 / CloudFront)
+│    ├── CPU
+│    ├── NetworkIn/Out
+├── Backend Metrics (Lambda / ECS / EC2)
+│    ├── CPU / Memory
+│    ├── Errors / Duration
+├── Database Metrics (RDS)
+│    ├── CPU
+│    ├── Storage
+│    ├── Connections
+└── Logs
+     ├── Backend logs
+     ├── Frontend logs
+2️⃣ Steps to Create a Dashboard (Console)
+Step 1: Open CloudWatch
+
+Go to AWS Console → CloudWatch → Dashboards → Create Dashboard
+
+Step 2: Name Your Dashboard
+
+Example: MyApp-FullStack-Monitoring
+
+Step 3: Add Widgets
+
+Widgets can display:
+
+Metrics (graph)
+
+Number
+
+Text
+
+Logs
+
+Step 4: Add Metrics
+a) Frontend (if hosted on EC2 or CloudFront)
+
+EC2 Metrics:
+
+CPUUtilization
+
+NetworkIn / NetworkOut
+
+DiskReadOps / DiskWriteOps
+
+CloudFront Metrics (if using S3 + CloudFront):
+
+Requests
+
+4xx / 5xx Errors
+
+Example:
+
+Click Add widget → Line → Select metric
+
+Namespace: AWS/EC2
+
+Metric: CPUUtilization
+
+Dimension: Select your frontend instance
+
+b) Backend (EC2 / Lambda / ECS)
+
+EC2 Metrics same as frontend
+
+Lambda Metrics:
+
+Invocations
+
+Duration
+
+Errors
+
+ECS Metrics:
+
+CPUReservation
+
+MemoryUtilization
+
+c) Database (RDS)
+
+Metrics to add:
+
+CPUUtilization
+
+FreeStorageSpace
+
+DatabaseConnections
+
+ReadIOPS / WriteIOPS
+
+Example:
+
+Add metric widget → Namespace: AWS/RDS → Metric: CPUUtilization → Dimension: your DB instance
+
+Step 5: Add Logs (Optional)
+
+Add Log query widget:
+
+Click Add widget → Logs → View logs
+
+Select Log Group:
+
+Backend logs: /aws/lambda/my-backend or /ec2/my-backend
+
+Frontend logs: /ec2/frontend-app
+
+Filter pattern (optional): e.g., "ERROR"
+
+Save widget
+
+Step 6: Organize Dashboard
+
+Drag and resize widgets
+
+Group frontend, backend, and DB sections
+
+Save dashboard
+
+
+
+
+
+15-DATA BLOCK?
+A data block is used to read or reference existing resources without creating them.
+It’s like fetching information about something that already exists in your cloud or environment.
+Useful when you need values from resources not managed by Terraform or created elsewhere.
+In short: resource = create, data = read/existing.
+
+
+16-DYNAMIC BLOCK?
+A dynamic block in Terraform allows you to generate repeated nested blocks programmatically.
+Useful when the number or values of nested blocks are not known in advance.
+Instead of writing the same block multiple times, you can loop through a list or map and generate them dynamically.
+Think of it like a for loop inside Terraform configuration.
+
+
+
+16-export TF_LOG=DEBUG
+What it Does
+The TF_LOG environment variable controls the verbosity level of logs Terraform produces during execution (like terraform init, plan, apply, etc.).
+Setting it to DEBUG gives very detailed internal logs, including backend communication, plugin loading, and API calls.
+
+
+
+
+TF-SWITCH AND TF-ENV  ARE THE TOOLS TO SWITCH TERRAFORM VERSION
+
+
+
+COMMAND TO UNLOCK WHEN LOCKING HAPPENS IN TERRAFORM = terraform force -unlock lockID
+ASK YOUR COLIGS IS ANY ONE IS WORKING ON IT. BECAUSE IT WILL DISTURB THEIR WORK BY LOCKING THEM.
+
+
+17-MAKE
+IT IS A SOFTWARE WHICH MAKES TERRAFORM COMMANDS SHORTEN
+CREATE A Makefile and give commands on it.
+
+--no-cache command for not to use existing layers in docker images
+
+18-DOCKER IMAGE TYPES
+distribution(OS BASED IMAGE), distrolious(IT CONTAINS JAVA ITSELF).
+NOTE: WE CAN REMOVE APPLICATION CODE AFTER JAR FILE BUILD TO REDUCE SIZE OF THE IMAGE AND PUSH TO DOCKER HUB.
+
+
+19-DOCKER LAYERS
+When you build a Docker image, each instruction in your Dockerfile creates a new layer.
+Layers are read-only, and together they form the final image.
+Docker caches each layer.
+If you rebuild the image and a layer hasn’t changed, Docker reuses the cached layer, making builds faster.
+Layers are stacked using a Union File System (UFS) — meaning Docker presents them as a single merged filesystem to the container.
+
+
+
+
+COMMUNICATION BETWEEN TWO CONTAINERS IS CREATED WITH USING [--link] OPTION  (conatainer1 --link container2)
+docker run --name=mydb -d -e MYSQL_ROOT_PASSWORD=Adminpassword123 mysql
+docker run -d --name=be-app-con --link=mydb -e MYSQL_HOST=jdbc:mysql://mydb:3306/datastore?createDatabaseIfNotExist=true -e MYSQL_USERNAME=root -e MYSQL_PASSWORD=Adminpassword123 be-app
+docker run  --name=fe-app-con   -link=be-app-con  -e  API_URL=http://be-app-con:8084 -p  8787:8080 -d fe-app
+
+
+COMMAND TO RUN JAR FILE ["java -jar filename"]
+
+
+PYTHON DEPENDENCIES=REQUIREMENTS.TXT.
+JAVA DEPENDENCIES=POM.XML.
+PASS MySql  DETAILS TO APPLICATION PROPERTIES.[MySql -- BE_APP]
+
+
+
+20-TEMPLATISATION
+IT WAS LIKE VARIABLES IN TERRAFORM.
+CREATE (.env) FILE AT DOCKER-COMPOSE FILE.
+(.env-prod) NAMES CAN GIVE LIKE THIS.
+
+
+
+
+ DOCKER - CONTAINER - APP
+
+
+K8S - POD - CONTAINER - APP
+
+
+NODE -EC2
+
+
+21-INIT & ACTUAL CONTAINERS
+Before actual container starts init container starts first.
+Before actual container perform activites,  init container starts first.
+Init containers run sequentially, one after another.
+Each must complete successfully before the next starts.
+Only after all init containers finish does the main app container start.
+If any init container fails, Kubernetes restarts it until it succeeds (or until the pod’s restart policy fails)
+
+
+[-c flag to used to see logs of particular node]
+
+
+[kubectl port-forward pod/init-pod 7575:80]-------port forwarding.
+
+
+
+
+
+
+22-RESTART POLICES:
+Kubernetes decides what to do if a container fails based on the restartPolicy set in the Pod spec.
+There are 3 types:
+Policy                 	What it means	                                                              Used in
+Always 	Restart the container whenever it stops (even if exit code = 0).	               Default for Deployments, ReplicaSets, DaemonSets
+OnFailure	Restart only if the container fails (non-zero exit code).	                              Jobs
+Never	        Don’t restart the container, even if it fails.	                                     Jobs, Pods for debugging
+      
+
+23-IMAGE PULL POLICY:
+ImagePullPolicy tells Kubernetes when to pull (download) the container image from a registry.
+🔹 Types of Image Pull Policies
+Policy	                               Meaning                                                 When Used
+Always	                Always pull the image every time the Pod starts	                     Latest dev builds or CI/CD environments
+IfNotPresent	        Pull only if the image is not already on the node                          Stable production images
+Never	                Never pull; use only local images	                                     Offline or air-gapped setups
+
+
+KUBERNETES PROJECT:
+FLUENTBIT IS A LOG COLLECTOR 
+KIBANA SHOWS THE LOGS OF ELASTIC SEARCH IN GRAPHS.
+
+
+
+23-FQDN
+A Fully Qualified Domain Name (FQDN) means the complete domain name that uniquely identifies a host on the internet — including all levels (hostname + domain + top-level domain),
+FQDN is used to make connection (or) communiction between services in k8s.
+
+
+
+
+
+24-HEALTH CHECK PROBS
+Health check probes in Kubernetes are used to monitor the health and readiness of containers inside Pods. There are three main types of probes:
+🩺 1. Liveness Probe
+Purpose: Checks if the container is alive or still running properly.
+If fails: Kubernetes restarts the container.
+🧠 Real-time example:
+If your app gets stuck in a deadlock, the liveness probe fails and K8s restarts it.
+⏳ 2. Readiness Probe
+Purpose: Checks if the container is ready to serve traffic.
+If fails: Pod is removed from Service load balancing (but not restarted).
+🧠 Real-time example:
+App might take time to load data on startup. Until it’s ready, K8s won’t send requests to it.
+💤 3. Startup Probe
+Purpose: Checks if the app has started successfully (used for slow-starting apps).
+If fails: Kubernetes restarts the container.
+Disables other probes until it passes.
+🧠 Real-time example:
+If your app takes 2 minutes to boot, startup probe prevents liveness from killing it too early.
+⚙️ Probe types:
+httpGet: Check a URL endpoint.
+tcpSocket: Check if a port is open.
+exec: Run a command inside the container.
+
+IRSA-iam roles for service account in k8s
+Register E K S Cluster with IAM role - Identity providers - Create S3 policy - Create IAM service account
+[For practical purpose: Add files in SI First create an init container with Aws credentials After try with IRSA And see the difference]
+
+
+
+
+
+ARGOCD AUTOMATES THE DEPLOYMENT PROCESS ON K8S
+
+
+
+25-IRSA
+Think of IRSA as a bridge between your Kubernetes pods and AWS IAM roles —
+so that your pods can safely talk to AWS services without storing any access keys.
+
+
+
+NOTE;we use push gate way for short lived objects
+service discovery is a machanism to collect metrics from k8s cluster
+8081 is a service port number
+
+
+
+25-INGRESS:
+ingress is a singlr gateway to allow trafic
+it passes Multiple requests for multiple load balancers in a single gateway.
+Using WAF We can block Requests of a particular IP'S.
+
+
+
+
+
+
+
+26-TYPES OF TAINT EFFECTS
+noschedule
+no executive
+prefer no schedule
+Scheduler makes pod into pending state
+
+
+
+27-AWS automatically reserves 5 IPs in every subnet.
+
+So even if you create a small subnet, usable IPs = total IPs – 5.
+
+These 5 reserved IPs are:
+
+Purpose	Address
+Network address	first IP
+VPC router	second IP
+Reserved by AWS	third IP
+Reserved by AWS future use	fourth IP
+Broadcast address	last IP
+
+
+
+====================================================================================================================================
+KEYPOINTS
+
+statefile updates is the last step in terraform apply
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+====================================================================================================================================
+AWS THREE TIER ARCHITECTURE
+
+Create a custom vpc network
+subnets-6[pub-3,prt-3]
+route tables-2[pub-1,prt-1]
+internet gate way
+nat gateway
+edit routes and subnet association in route table
+[purpose of every step need to understand]
+
+create individual SG groups
+
+        5 SG RDS-->3306
+        4 SG BE--->8084
+        3  SG NLB-->80
+        2 SG FE--> 8501
+        1 SG ALB--> HTTP
+[difference between inbound and outbound rules.]
+
+create subnet group
+Create RDS
+
+Create IAM role for ec2 instance S3 fullaccess,Cloudwatchagentserverpolicy.[give this to BE launch template]
+create bucket and upload BE jar file
+edit user data of backend ( change S3 bucket name and rds configurations)
+Create Launch template for Backend and give user data (t2.medium) (IAM)
+
+
+
+#!/bin/bash
+exec > /var/log/user-data.log 2>&1
+set -x
+
+echo "Executing User_Data In dev"
+
+# Update and install Java
+yum update -y
+yum install java-11-amazon-corretto -y
+
+# Create log directory
+mkdir -p /var/log/app/
+chown ec2-user:ec2-user /var/log/app/
+
+cd /home/ec2-user
+
+# Download Spring Boot application JAR from S3
+aws s3 cp s3://mahi452218/datastore-jarfile-proj-1.jar .
+
+# Set proper permissions on the JAR
+chmod 755 datastore-jarfile-proj-1.jar
+
+# Define environment variables and start the app
+MYSQL_HOST=jdbc:mysql://database-1.cxug8gik6kgk.us-east-1.rds.amazonaws.com:3306/datastore?createDatabaseIfNotExist=true \
+MYSQL_USERNAME=admin \
+MYSQL_PASSWORD=rohit4518 \
+LOG_FILE_PATH=/var/log/app/datastore.log \
+nohup java -jar /home/ec2-user/datastore-jarfile-proj-1.jar > /var/log/app/nohup.out 2>&1 &
+
+# Install CloudWatch Agent
+yum install -y amazon-cloudwatch-agent
+
+# Create CloudWatch Agent configuration file
+cat << EOF > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/app/datastore.log",
+            "log_group_name": "/datastore/app",
+            "log_stream_name": "{instance_id}",
+            "timestamp_format": "%Y-%m-%d %H:%M:%S"
+          }
+        ]
+      }
+    }
+  }
+}
+EOF
+
+# Start CloudWatch Agent
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
+
+
+
+
+
+Now Create Target group by using application port number 8084(will be given by developer) and health checks /actuator/health[tcp-8084&override-8084]
+create load balancer[NLB][listener]
+Create a auto scaling group so that instances get created by using Launch template
+Check CloudWatch Logs for the status whether it is deployed or not and also check TG health checks[tomcat started in logs , target group -healthy]
+Now create Metric filter "ERROR"
+Now create CloudWatch alarm by going to Log groups--> Metric filters---> create alarm
+Create SNS function
+Then create Lambda function
+ADD Configurations details of webhooks of slack from (slack api) website
+Also create a CHANNEL from slack app #Alerting
+In permissions add Resource-based policy statements in lambda
+Then go to SNS subscription and create  it (give lambda endpoint)
+Before deploying and testing the lambda function add this JSON event as per the lambda function 
+
+SNS CODE FOR LAMBDA:
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:us-east-1:225989358737:Default_CloudWatch_Alarms_Topic:d5b12031-d3ac-46e1-8cae-c62482dffbd5",
+      "Sns": {
+        "Type": "Notification",
+        "MessageId": "11111111-2222-3333-4444-555555555555",
+        "TopicArn": "arn:aws:sns:us-east-1:225989358737:Default_CloudWatch_Alarms_Topic:d5b12031-d3ac-46e1-8cae-c62482dffbd5",
+        "Subject": "ALARM: \"High CPU Utilization\" in US East (N. Virginia)",
+        "Message": "{\"AlarmName\": \"High CPU Utilization\", \"NewStateValue\": \"ALARM\", \"NewStateReason\": \"Threshold Crossed: 1 datapoint [85.0 (15 Oct 2025 09:45:00)] was greater than the threshold (80.0).\"}",
+        "Timestamp": "2025-10-15T09:46:00.000Z",
+        "SignatureVersion": "1",
+        "Signature": "example-signature",
+        "SigningCertUrl": "example-cert-url",
+        "UnsubscribeUrl": "example-unsubscribe-url",
+        "MessageAttributes": {}
+      }
+    }
+  ]
+}
+Save and Deploy the lambda function
+Now go to Log group and create LOG EVENT  "ERROR"
+Now a notification pops up in SLACK app
+Create ALB security group -http 
+Create front end security group - Custom TCP 8501, In source give the alb security group ID
+Create target group - port 8501, Override 8501
+Launch template In user data edit iam role and user data network load balance dns and S3
+Create ALB : internet - Public subnets - ALB Security Group - 80 - Target group
+Create ASG : Private subnets , Enable health cheque
+Create cloud front distribution: Edit behaviour, Viewer protocol policy-HTTP and HTTPS - Legacy cache - Stats - Include fall headers - Add custom headers - Object caching - Use origin Cache - Edit origin to H T T P & 80 - Inspect network headers cache [Accessible  Checking]
+Create ACM certificate - Go to ACM certificate manager - Create route 53 record [Route 53 - Hosted zones - Domain name - Create]
+Add name servers in go daddy
+Distribution - Select ACM - Save changes And create record
+WAF - Web acl - Global resources, Select distribution, Add own rules, Block
+To change access range: Web ACL, Custom Response, HTML Code And save
+Rules - Edit - Custom response code 403 - Choose custom response - Save 
+[Lambda layers- Custom dependencies- Which is not provided- Need proper folder structure]
+
+
+
+
+
+====================================================================================================================================
+TERAFORM PROJECT
+
+INSTALLING TERRAFORM:
+
+sudo yum install -y yum-utils shadow-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum -y install terraform
+terraform --version
+
+NOTE: TERRAFORM IS 3RD PARTY TOOL, SO WE NEED TO GIVE PERMISSION TO TERRAFORM TO WORK WITH AWS
+CREATE A ROLE AND ATTACH TO EC2
+
+aws configure (or) give a role
+check ll .aws/ for the configuration 
+
+
+---------------------------------------
+terraform plan -var-file="./environment/development/terraform.tfvars"
+--------------------------------------------
+
+
+Hi All, As some you people asked. Below are the steps that we will create our project with terraform.
+Steps for VPC Database.
+-----------------------
+- Create a VPC and it's components like "internet gateway", "public subnets", "private subnets", "nat gateway", "public route table & private route table" and associate public subnets with public route table and private subnets with private route table.
+
+Steps for RDS Database.
+-----------------------
+FOR RDS CREATION FIRST CREATE PARAMETER STORE
+PARAMETER STORE>name>secure string>value(rohit)>create
+
+- Create a parameter named "rds_parameter" in parameter store and value of rds password.
+- Create subnet group with private subnets and create an RDS Database(In subnet group) with it's components like security group and accessing default kms key with data block.
+
+Steps for Backend Application ASG.
+---------------------------------
+- Create a launch template for Backend Application ASG. Create a security group to be attached backend instances(This security group should allow the traffic from NLB security group).
+- Create a target group that need to be selected while creating ASG.
+- Create an ASG and select required things while creating like target group etc.,
+- Configure backend asg with lifecycle hooks and scheduling.
+
+Steps for Creating NLB.
+----------------------
+- Create a NLB and select the above created target group with security group attached and its components like listener. This NLB security group should allow traffic from frontend application ASG.
+
+Steps for Frontend Application ASG.
+----------------------------------
+- Create a launch template for Frontend Application ASG. Create a security group to be attached frontend instances(This security group should allow the traffic from ALB security group).
+- Create a target group that need to be selected while creating ASG.
+- Create an ASG and select required things while creating like target group etc.,
+- Configure frontend asg with lifecycle hooks and scheduling.
+
+Steps for Creating ALB.
+----------------------
+- Create a ALB and select the above created target group with security group attached and its components like listener. This ALB security group should allow traffic from all ports.
+
+Steps for Creating Cloudfront Distribution.
+------------------------------------------
+- Create Cloudfront distribution with origin to ALB. Create a default behaviour that routes traffic to ALB.
+
+Steps for Creating ACM.
+----------------------
+- Create a ACM certificate with required domain and integrate it with Cloudfront distribution.
+
+Steps for creating WAF ACL.
+--------------------------
+- Create a WAF WEB ACL and integrate it with Cloudfront distribution. Configure WAF WEB ACL with default error page it users are not allowed to access application based of access rules configured.
+
+Steps for Creating Route53 Hosted Zone.
+--------------------------------------
+- Create a Route53 Hosted Zone and add a record into it that routes the domain traffic to cloudfront distribution.
+
+
+
+1:terraform.tfvars → root variables.tf → module variables.tf
+So values “flow” downward:
+You define values in terraform.tfvars
+They get picked up by root variables.tf
+Passed as inputs to each module’s variables.tf
+three-tier-infra/
+├── variables.tf          👈 (root level)
+└── modules/
+    ├── vpc/
+    │   └── variables.tf  👈 (module level)
+
+
+
+======================================================================================================================================
+K8S PROJECT
+
+CREATING CLUSTER:
+
+#STEP-1: UPDATE
+
+yum update && yum install unzip -y
+
+#STEP-2: AWS CLI INSTALLATION & EKS & KUBECTL
+
+aws configure
+ 
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+mv kubectl /usr/local/bin/kubectl
+
+
+sudo wget https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz
+sudo tar -xzvf eksctl_$(uname -s)_amd64.tar.gz -C /usr/local/bin
+eksctl version
+
+
+#STEP-3: CREATE CLUSTER
+eksctl create cluster --name=mahi --version 1.30 --zones=us-east-1a,us-east-1b,us-east-1c --without-nodegroup
+
+kubectl cluster-info
+kubectl cluster-info dump
+
+
+eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster mahi --approve
+
+#STEP-4: CREATE NODEGROUP
+eksctl create nodegroup --cluster=mahi --region=us-east-1 \
+--name=mahi-cluster-ng-1 --node-type=t2.medium \
+--nodes=2 --nodes-min=2 --nodes-max=4 --node-volume-size=20 \
+--ssh-access  --ssh-public-key=Mahendra.pem \
+--managed --asg-access --external-dns-access --full-ecr-access \
+--appmesh-access --alb-ingress-access
+
+
+eksctl get clusters
+eksctl get nodegroup --cluster mahi 
+
+#STEP-5: DELETE RESOURCES  
+eksctl delete nodegroup --cluster mahi --name mahi-cluster-ng-1 
+eksctl delete cluster --name=mahi
+
+=================================================================================================================================
+CLUSTER UPGRADING
+
+prerequrements:
+cordon the nodes(unschedle)
+make sure we go through release notes[Release notes = “What changed and what you should know before upgrading.”]
+(eks cluster upgradation ids irreversible)
+test it on lower environments
+before upgrading control panel and worker nodes should be on same version
+
+process to follow
+kubectl get nodes
+[node types:self managed nodes,managed node groups,fareget]
+self managed nodes:
+first upgrade control panel
+go to asg of nodes and update new launch template and update[update-version&AMI]
+rollin update any time 
+
+managed node groups:
+node group - update now - select rolling update
+
+fareget:
+after control panel upgrade restart the pods
+
+addons update:
+| Addon          | Job                            |
+| -------------- | ------------------------------ |
+| **VPC-CNI**    | Gives IPs to pods (networking) |
+| **CoreDNS**    | Resolves service names (DNS)   |
+| **kube-proxy** | Routes service traffic to pods |
+steps:
+eksctl get addon --cluster <cluster-name>
+Upgrade addons (recommended method)
+Using eksctl (easiest)
+Upgrade VPC-CNI
+eksctl upgrade addon \
+  --name vpc-cni \
+  --cluster <cluster-name> \
+  --approve
+
+Upgrade CoreDNS
+eksctl upgrade addon \
+  --name coredns \
+  --cluster <cluster-name> \
+  --approve
+
+Upgrade kube-proxy
+eksctl upgrade addon \
+  --name kube-proxy \
+  --cluster <cluster-name> \
+  --approve
+
+Verify the upgrade
+kubectl get pods -n kube-system
+
+Check:
+
+all aws-node pods running (VPC-CNI)
+
+coredns pods running
+
+kube-proxy DaemonSet updated
+
+Get DaemonSet version:
+
+kubectl get ds kube-proxy -n kube-system -o wide
+
+Check version inside image:
+kubectl describe deployment coredns -n kube-system | grep Image
+kubectl describe ds kube-proxy -n kube-system | grep Image
+
+ORDER OF UPGRADE (VERY IMPORTANT)
+
+VPC-CNI → first
+
+kube-proxy → second
+
+CoreDNS → last
+
+This avoids networking issues.
+
+⚠️ COMMON ISSUE
+
+If addons are managed by Helm or custom-manifests → eksctl upgrade will fail.
+
+You must remove the old unmanaged add-on, then install EKS-managed one.
+
+
+
+
+
+SHORT DESCRIPTION
+1. Upgrade EKS control plane
+2. Upgrade addons: VPC-CNI, CoreDNS, kube-proxy
+3. Create new Launch Template with new EKS-optimized AMI
+4. Apply new LT to ASG
+5. Rolling upgrade worker nodes:
+     drain → terminate → ASG creates new upgraded node
+6. Validate workloads + nodes
+
+======================================================================================================================================
+In Prometheus configure file we write alert rules
+grafana collects data from various data stores
+Prometheus trigger message to alert manager the alert manager send message to slack, email or teams.
+we can write alerts on also
+Argo CD automates the Kubernetes deployment files in k8s cluster
+Service name used to make communication between Two pods in the same name space.
+Fully qualified domain name used to make communication between two pods in different namespace.
+Coredns pods are which are responsible for creating domains
+Container config error comes when we create containers without configure maps deployment.
+Using probs we perform healthchecks in k8s and kubelet perform healthcheckes
+Mysql and Mongodb cannot have ApIs
+Service discovery is a mechanism to collect metrics
+When pod uses more cpu in a node it will come throttle error and Out of memory[OOM] error comes when pod uses more memory in a node
+Instrumentation - Collection of application matrix(Add dependencies)
+
+
+==================================================================================================================================
+ARGOCD:
+kubectl create namespace argocd
+install argocd using helm command
+kubectl get po -n argocd
+kubectl get secrete -n argocd
+kubectl edit secrete (name) -n argocd
+encode secrete [echo (jbdshsbh) | base64 --decode]
+kubectl port-forward svc/argocd-server 8080:443 -n argocd
+localhost:8080
+argocd UI - setting - repos - git-repo - connect
+create an application in argocd: new-app - datastore-app-name - sync - automatic 
+we can deploy helm charts also
+kubect get po
+argocd  related mafiest files in one repo and application repo in another 
+argocd relate mafifest file has info about microservice related information
+application repo contains applicetions of argocd information
+application set deploy in k8s
+kubectl apply -f applictionset.yml
+kubectl get po - -n argocd
+===============================================================================================================================
+
+Step1:- create rds
+Step2:- backend
+        - update the configmap.yml with RDS endpoint
+        - update the secret.yml with RDS password 
+        -cretae backend namespace
+        - deploy congmap.yml and secret.yml and deployment.yml
+       - check the application running inside the pod or not using kubectl exec po <pod name> -n backend /bin/bash
+     And use this to check 'ps' and ping http://localhost:8084
+
+Step:-3
+   - Cretae frontend namespace
+   - update the frontend configmap.yml with backend-svcurl:8081(FQDN)
+    - deploy the frontend.dep.yml
+Note---- if you want access this without ingress you can do port forward for frontend svc through <<<<kubectl port-forward svc/frontend svc name 7373:8081 -n frontend >>>or directly you can access
+Step:-4
+Deploy ingress-controller in ingress-ngonx namespace
+Step:-5
+  -deploy ingrees-object in frontend namespace  along with update  frontend svc in ingress-object.yml
+Step:-6
+  -Cretae domain in GoDaddy create cname record as per ingress-object.yml
+
+
+And access through domain name
+
+=========================================================================================================================================
+
+
+Below are the commands I have used today
+--------------------------------------------
+ 1366  kubectl apply -f ingress.yaml
+ 1368  kubectl delete -f ingress.yaml
+ 1374  kubectl get ingress -n frontend
+ 1887  kubectl apply -f namespace.yaml
+ 1888  kubectl get ns
+ 1889  ls
+ 1890  kubectl apply -f datastore-fe-cm.yaml
+ 1892  kubectl apply -f datastore-fe.yaml
+ 1893  kubectl get po -n frontend
+ 1895  kubectl get po
+ 1896  kubectl delete -f datastore-fe.yaml
+ 1900  kubectl get svc -n frontend
+ 1901  kubectl describe svc datastore-frontend-svc -n frontend
+ 1902  kubectl port-forward svc/datastore-frontend-svc 7373:8081 -n frontend
+Shiva:
+1077  curl -X POST http://localhost:9393/-/reload
+ 1078  curl -X POST http://localhost:9393/-/reload
+ 1079  curl -X POST http://localhost:9391/-/reload
+ 1080  kubectl edit cm prometheus-alertmanager -n monitoring
+ 1081  curl -X POST http://localhost:9391/-/reload
+ 1082  kubectl edit cm prometheus-alertmanager -n monitoring
+ 1083  curl -X POST http://localhost:9391/-/reload
+ 1084  kubectl apply -f datastore-be.yaml
+ 1085  kubectl get nodes
+ 1086  kubectl get po -n backend
+ 1087  kubectl delete po datastore-backend-6c6876b59c-nmbh4 -n backend
+ 1088  kubectl get po -n backend
+ 1089  kubectl get po -n backend
+ 1090  kubectl get po -n backend
+ 1091  kubectl get po -n backend
+ 1092  kubectl get po -n backend
+
+990  kubectl get po -n monitoring
+  991  kubectl get po -n monitoring
+  992  kubectl get po -n monitoring
+  993  kubectl get po -n monitoring
+  994  kubectl get po -n monitoring
+  995  kubectl get pv -n monitoring
+  996  kubectl get pvc -n monitoring
+  997  clear
+  998  kubectl get svc -n monitoring
+  999  kubectl port-forward svc/prometheus-server 9797:80
+ 1000  kubectl port-forward svc/prometheus-server 9797:80 -n monitoring
+ 1001  kubectl get po -n monitoring
+ 1002  kubectl get svc -n monitoring
+ 1003  kubectl port-forward svc/prometheus-alertmanager 9393:80 -n monitoring
+ 1004  kubectl port-forward svc/prometheus-alertmanager 9393:9093 -n monitoring
+ 1005  kubectl port-forward svc/prometheus-alertmanager 9391:9093 -n monitoring
+
+998  kubectl get svc -n monitoring
+  999  kubectl port-forward svc/prometheus-server 9797:80
+ 1000  kubectl port-forward svc/prometheus-server 9797:80 -n monitoring
+ 1001  kubectl get svc -n monitoring
+ 1002  kubectl port-forward svc/grafana 9595:80 -n monitoring
+
+1090  kubectl port-forward svc/prometheus-server 9797:80 -n monitoring
+ 1091  kubectl port-forward svc/prometheus-server 9797:80 -n monitoring
+
+===============================================================================================================================
+PROJECT-3
+create database server in cluster vpc
+Create k8s cluster and nodes after create  backend namespace
+Create config map, secrets and backend-deployment.yml
+Modify RDS endpoint in backend.yml And give time for Health checks RDS creation
+[If pod creation fails first check the logs and after describe the pod]
+[If back end and database are connected it will show healthy Then we can consider it was success communication between back end and database]
+For rds select the cluster VPC And cheque the cluster v P C in cluster instance
+Create rds - Create cluster and nodes - Create namespace of backend - Edit R D S endpoint in config map - Deploy the config map and secret yaml's - Deploy backend yml - kubens helps to switch namespace in k8s - If back end R D S connected successfully it shows healthy and in logs tomcat started - cheque logs and describe pods of backend - Go to Backend Pod and cheque the jar file 
+commands in backend: ps -aux, ping http://localhost:8084/actuator, netstat.
+[8081 is a service port]
+Create front end namespace Go to frontend config map and give back end service FQDN in endpoint.
+Deploy config map edit endpoint in front end deployment.yaml
+[FQDN OF CLUSTER IP CREATION COMMAND --<service-name>.<namespace>.svc.cluster.local]
+Note---- if you want access this without ingress you can do port forward for frontend svc through <<<<kubectl port-forward svc/frontend svc name 7373:8081 -n frontend >>>or directly you can access [We can do port forward only in local machine]
+API checking
+Docker run --name=backend -d -e MYSQL_ROOT_PASSWORD=""  MYSQL_ROOT=""  MYSQL_ENDPOINT="" MYSQL_USER="" Image name
+browser: IPOFNODE:5757/actuator  [See the result]
+Ingress is a single gateway to allow traffic Of multiple load balancers
+Deploy Ingress.yml 
+Give rules for the Ingress object
+Go to godaddy - DNS - Add D N S record - Cname - Name - Load balancer Endpoint In value - TTL - Save
+Now  deploy Ingress.Yaml
+Put the Ingress object in front end namespace
+Put the Ingress-deployment.yml In Ingress namespace
+ingress - loadbalancer - monitoring - check requests
+See the ingree service and ingress controller.
+Go to the logs of Ingress Controller and cheque for [found Ingress Class]
+Access the application from ingree address of load balance.
+Making traffic from HTPP to HTTPS
+Create a certificate in aws - Certificate manager - Request certificate - Create 
+Certificate endpoint addon godaddy [New record - C name - Invalues section give load balancer dns - TTL = custom - Create
+Add arn of certificate in Ingress.Yml
+Update DNS record with new load balancer of ingress
+Associated resources shows which role certificate associated for.
+Using WAF we can block The IP'S of particular requests
+METRICS
+Metric are two types first one is cluster level matrix and second one is application level metrics
+Instrumentation is A process of exporting application metrics
+Add dependencies Actuator dependencies and Prometheus Dependencies to collect the metrics
+actuator dependencies collects all application level metrics
+Prometheus dependence makes the Matrix into Prometheus understandable format
+Port forward the back end and cheque matrix in local host
+[localhost://8081/actuator     &    localhost://8081/actuator/prometheus]
+We have multiple exporters to collect the metrics
+target        datasource  |  grafana
+ec2           Prometheus  |  Grafana
+Dynamic volume provisioning
+Give permission for cluster in aws
+AWS-ebs-csi-driver is a realese name
+plugins - AWS-ebs-csi-driver helps AWS EBS provisioning
+deploy storage class
+MONITORING:
+Create monitoring namespace
+instal Prometheus Helmchart
+Go to EC2-EBS
+cheque P V and P V C
+PORt forward the Prometheus and access the Prometheus
+target health shows from which place metrics are collecting
+Collect the matrix from back end application
+Go to Backend.Yml and add annotation this is called service discovery
+period seconds  block means for how many seconds kublet need perform  health cheques
+Go to target health in Prometheus
+Instrumentation
+Deploy Grafana Helm And connect through local host
+Connect Prometheus and Grafana throw F Q D N of Prometheus
+Add data source in Grafana
+FQDN is used to make connection or communication between two services in k8s cluster
+Create dashboard : dashboard - new dashboard - add visualisation or panel (both are same) - select data source
+edit panel - queries - add Prometheus query and run query (code & builder)
+To reduce the requests we can stop the health cheques
+How to cheque grafana is collecting data or not Go to query Inspect and see data is there or not
+Add rows to isolate panels
+save dashboard
+playlist - Create playlist - Name - Intervals - Select data source -  Save - Start playlist
+Go to playlist - share it -copy url - Page on browser 
+Go to Prometheus - Target - See there was matrix up or down [If they are up  Prometheus is collecting metrics if they are down Prometheus is not collecting the metrics]
+Go to Prometheus alert And edit the config file of Prometheus
+Edit back end deployment health cheque path for application down to cheque the alerting
+Configured the alert manager 
+Update Alert Manager Configmap
+Port forward the alert manager
+Reload the alert manager
+Give the web hook URL of slack in alert manager Config map[For Webb Hook URL Go to api.slack.com]
+LOGGING:
+Fluentbit act as a Log collector 
+Amazon Open search = elastic search
+The application which stores data is called Stateful application
+Elasticsearch is a search engine
+Kibana used to show the logs
+instal AWS.EBS driver with helm
+Go to fluent bit config map [input path - from where logs are taken],filter.output.
+Log statsh is also Log collector
+Create NS logging
+Go to Fluent bit.yml And Elasticsearch endpoint, Port number
+Service account Of fluent bit Requires permission To collect logs
+[To cheque logs of a container: Connect to node - Go to cd var/log containers - ls]
+Deploy Elasticsearch serviceaccount.yml
+Deploy elasticsearch-Sts.Yml
+kubectl get po -n logging
+Deploy fluentbit-configmap.yml
+Deploy fluentbit-clusterrole.Yml
+deploy fuentbit-svc.yml
+deploy fluentbit-deploy.yml
+kubectl get po -n logging
+Give elastic search endpoint in Kibana-Deployment.Yml
+deploy kibana-dep.yml
+deploy kibana-svc.yml
+kubectl get po -n logging
+kubectl port-forward svc/kibana 5601:9797 -n logging
+Access logs in Kibana With local host
+Go to discover in Kibana and see logs
+Elasticsearch stores data in indexes
+Create index pattern(Kibana) Go to discover
+filter shows particular logs of k8s in Kibana
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================================================================================
+HELM CHARTS:
+Converting back end application into Helmchart:
+mkdir helm
+cd helm
+mkdir datastore-be-app
+cd datastore-be-app
+touch chart.yml values.yml
+mkdir templates 
+cd templates
+touch notes.txt _helpers.tpl
+put backend files in template directory
+in chart.yml  chart information
+in values.yml put the values which are templatized in be-app
+helm install datastore datastore-be-app --dry-run=client
+helm list - shows realeses happened
+helm history (release name)
+common code for multiple files placed in - _helpers.tpl
+notes.txt - displays the information we put in this after installing helm chart
+helm delete (relese name) -n  namespace
+configmap templatization
+secrete templatization
+values prod.yml [if we want to use different env]
+to override existing values at run time we use -set flag
+helm lint <chart_directory> - to check the syntax
+helm install datastore datastore-be-app
+helm install datastore datastore-be-app --values-from=values-prod.yml
+helm upgrade <release_name> <chart_directory> [flags]   [used to update existing release]
+helm history datastore
+helm delete datastore
+
+
+
+
+
+release name in config file:
+You want to use the Helm release name (the name you provide when installing with helm install <release-name> ...) inside your Kubernetes manifests.
+
+🧩 How it works
+
+Helm provides a built-in variable called .Release.Name that stores the release name.
+
+You can use it anywhere in your template files.
+
+📘 Example
+
+values.yaml
+
+app:
+  key: "some-value"
+
+
+configmap.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  key: {{ .Values.app.key }}
+
+When you install the chart:
+
+helm install myapp ./mychart
+
+
+Helm replaces .Release.Name with myapp.
+
+✅ Rendered Output
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-config
+data:
+  key: some-value
+
+🧠 Other useful .Release variables
+Variable	Meaning
+.Release.Name	Name of the release (given during helm install)
+.Release.Namespace	Namespace where Helm is deploying
+.Release.Service	The name of the Helm service (usually “Helm”)
+.Release.Revision	Revision number of the release
+💡 Tip
+
+You can combine it with with blocks too:
+
+{{- with .Values.app }}
+metadata:
+  name: {{ $.Release.Name }}-{{ .name }}
+{{- end }}
+
+
+Note: use $ to refer to the root context (so you can still access .Release even inside a with block).
+
+
+
+Helm provides this through .Chart.Name
+
+You can use the variable .Chart.Name in your templates to refer to the chart name.
+
+📘 Example
+
+Chart.yaml
+
+apiVersion: v2
+name: mychart
+version: 1.0.0
+description: A sample Helm chart
+
+
+values.yaml
+
+app:
+  key: "value123"
+
+
+configmap.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-config
+data:
+  key: {{ .Values.app.key }}
+
+🧾 When you install:
+helm install testrelease ./mychart
+
+✅ Rendered output:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mychart-config
+data:
+  key: value123
+
+💡 Common chart-related template variables
+Variable	Description
+.Chart.Name	The name of the chart (from Chart.yaml)
+.Chart.Version	The version of the chart
+.Chart.AppVersion	The version of the app (from Chart.yaml)
+.Release.Name	The name of the Helm release
+.Release.Namespace	The target namespace
+🔧 Combined example:
+
+If you want both release name and chart name together (useful for unique resource names):
+
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-config
+
+
+Rendered output (if release = testrelease and chart = mychart):
+
+metadata:
+  name: testrelease-mychart-config
+
+
+
+condition block in helm:
+{{- if and .Values.app.enabled (eq .Values.env "prod") }}
+# Only create in prod and when app.enabled=true
+{{- end }}
+
+
+
+
+
+26-What is toYaml in Helm?
+
+toYaml is a Helm template function that converts a Helm object or map into properly formatted YAML text.
+
+It’s used when you want to take structured data (from values.yaml) and print it neatly into your Kubernetes manifests.
+
+🧠 Why Use It?
+
+Sometimes you have nested values in your values.yaml, like:
+
+env:
+  - name: APP_MODE
+    value: production
+  - name: LOG_LEVEL
+    value: debug
+
+
+Instead of writing long loops in your template, you can just:
+
+env:
+{{ toYaml .Values.env | indent 2 }}
+
+
+This automatically converts the YAML structure into correctly indented YAML under the env: key.
+Example 2 — With toYaml
+
+values.yaml:
+
+env:
+  - name: APP_MODE
+    value: production
+  - name: LOG_LEVEL
+    value: debug
+
+
+deployment.yaml:
+
+containers:
+  - name: myapp
+    image: nginx
+    env:
+{{ toYaml .Values.env | indent 6 }}
+
+
+When rendered:
+
+containers:
+  - name: myapp
+    image: nginx
+    env:
+      - name: APP_MODE
+        value: production
+      - name: LOG_LEVEL
+        value: debug
+
+
+✅ Proper indentation
+✅ Clean and reusable
+toYaml alone doesn’t indent lines.
+You must use | indent N to align it under the correct YAML key.
+
+Example:
+
+annotations:
+{{ toYaml .Values.podAnnotations | indent 4 }}
+
+
+
+
+What is a with block in Kubernetes (Helm)?
+
+In Helm templates, a with block is used to set the context to a specific part of a values file, so you don’t have to keep writing long value paths.
+
+🧠 Syntax:
+{{- with .Values.myapp }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .name }}
+data:
+  key: {{ .key }}
+{{- end }}
+
+🔍 Explanation:
+
+.Values.myapp → refers to a section in the values.yaml file.
+
+Inside the with block, the dot (.) now points to .Values.myapp.
+
+This means you can just write .name instead of .Values.myapp.name.
+
+📘 Example:
+
+values.yaml
+
+myapp:
+  name: my-config
+  key: "value123"
+
+
+configmap.yaml
+
+{{- with .Values.myapp }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .name }}
+data:
+  key: {{ .key }}
+{{- end }}
+
+
+Rendered output:
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+data:
+  key: value123
+
+✅ Benefits:
+
+Makes templates cleaner and shorter.
+
+Avoids repeating long paths like .Values.myapp.name.
+
+Helps group related values logically.
+
+
+
+
+====================================================================================================================================
+JENKINS PROJECT
+
+Build cache(build-que) - plays where jobs wait until other job executives
+Test stage - Developer writes the unit test case in code like [2+1=3] is output giving correct or not ,is expected or not
+We can execute every stage in multiple nodes using labels
+Jenkins Stash - Its a storage place where we can store Any files it will available to all other nodes (used to store jar files)
+Parellel stages
+pipelines execute as Jenkins user
+When parameters added to Jenkins pipeline The first build will be fail
+Blue ocean is a visual UI for Jenkins
+
+
+=====================================================================================================================================
+CREATE JENKINS SERVER
+PLUGINS - [PIPELINE STAGE VIEW , BLUE OCEAN , PARAMETERIZED TRIGGER , SLACK NOTIFICATION]
+CREATE JENKINSFILE IN GITHUB
+JENKINS - PIPELINE - SCM - GIVE JENKINSFILE URL - MASTER BRANCH - SELECT JENKINSFILE - SAVE
+GO TO IAM ROLE AND CREATE A ROLE WITH S3 FULL ACCESS FOR JENKINS-EC2
+INSTALL AWS CLI
+INSTALL DOCKER IN JENKINS-EC2
+GIVE PERMISSION TO EC2
+INSTALL TRIVY IN JENKINS-EC2
+GIVE CREDENTIALS OF DOCKERHUB IN JENKINS
+ADD GITHUB TOKEN IN JENKINS CREDENTIALS
+CREATE A NEW JOD FOR DOWNSTREAM - K8S DEPLOYMENT FILE
+CONFIGURE SLACK NOTIFICATION 
+ADD SLACK IN CREDENTIALS
+
+1) Install Slack Notification plugin.
+
+1) Visit https://api.slack.com/apps.
+2) Click "Create New App". Select "From scratch"
+3) Provide "App Name". Select workspace.
+4) In left menu select OAuth & Permissions.
+5) Scroll down to "Scopes". Add following scopes.
+   a) chat:write
+   b) chat:write.public
+   c) channels:read
+6) Scroll above to OAuth Tokens. Click on "Install to <workspace>" option.
+7) Select channel and click on install.
+😍 Copy the user token generated.
+9) Configure this user token as secret text in jenkins credentials section.
+10) Click on setting on jenkins. Click on "System".
+11) Scroll down to "Slack".
+12) Provide workspace name, Select credential and provide channel name.
+13) Click on "Custom slack app bot user".
+14) Test the connection by clicking on "Test Connection" option.
+
+CHANGEBLE VALUES PASS AS PARAMETERS
+
+
+
+
+trivy issue:
+sudo mkdir -p /var/lib/jenkins/tmp
+sudo chown -R jenkins:jenkins /var/lib/jenkins/tmp
+
+sudo mkdir -p /var/lib/jenkins/.cache/trivy
+sudo chown -R jenkins:jenkins /var/lib/jenkins/.cache/trivy
+
+rm -rf ~/.cache/trivy
+
+ /* ===================== FIX START =====================
+       ISSUE FIXED: Trivy failing due to /tmp (2GB limit) + Java DB download (886MB)
+       SOLUTION:
+       - Move TMPDIR away from /tmp
+       - Persist Trivy cache to avoid repeated downloads
+       - Reduce scan load for CI stability
+    ===================================================== */
+
+    stage("Docker Image Scan") {
+      steps {
+        sh """
+          echo "-------- Scanning Docker Image --------"
+
+          # FIX 1: Avoid /tmp (tmpfs is only 2GB and causing failure)
+          export TMPDIR=/var/lib/jenkins/tmp
+          mkdir -p \$TMPDIR
+
+          # FIX 2: Persist Trivy DB cache (prevents re-downloading 886MB Java DB every build)
+          export TRIVY_CACHE_DIR=/var/lib/jenkins/.cache/trivy
+          mkdir -p \$TRIVY_CACHE_DIR
+
+          # FIX 3: Run optimized scan (CI friendly)
+          # Only vuln scan → avoids heavy secret + misconfig scanning overhead
+          trivy image --scanners vuln datastore:"${App_Version}"
+
+          echo "-------- Scanning Docker Image Complete --------"
+        """
+      }
+    }
+
+    /* ===================== FIX END ===================== */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================================================================================
+
+Shiva:
+Installing Java
+---------------
+sudo apt update
+sudo apt install fontconfig openjdk-17-jre
+java -version
+
+Installing Docker
+-----------------
+sudo apt update -y
+sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable" -y
+sudo apt update -y
+apt-cache policy docker-ce
+sudo apt install docker-ce -y
+sudo systemctl status docker
+
+Installing Maven
+----------------
+sudo apt-get install -y maven
+
+Installing Trivy
+----------------
+sudo apt-get install wget apt-transport-https gnupg lsb-release
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sudo apt-get update
+sudo apt-get install trivy
+
+Installing Jenkins
+------------------
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins -y
+
+Adding users to jenkins group
+-----------------------------
+sudo usermod -aG sudo jenkins
+sudo usermod -aG docker jenkins
+
+AWS IAM Role
+------------
+In AWS account create an IAM role with S3 full access permissions and attach it to Jenkins machine.
+
+GitHub Token
+------------
+
+Configuring Jenkins Pipeline With Slack
+---------------------------------------
+Pre Requirements
+----------------
+1) Install Slack Notification plugin.
+
+1) Visit https://api.slack.com/apps.
+2) Click "Create New App". Select "From scratch"
+3) Provide "App Name". Select workspace.
+4) In left menu select OAuth & Permissions.
+5) Scroll down to "Scopes". Add following scopes.
+   a) chat:write
+   b) chat:write.public
+   c) channels:read
+6) Scroll above to OAuth Tokens. Click on "Install to <workspace>" option.
+7) Select channel and click on install.
+😍 Copy the user token generated.
+9) Configure this user token as secret text in jenkins credentials section.
+10) Click on setting on jenkins. Click on "System".
+11) Scroll down to "Slack".
+12) Provide workspace name, Select credential and provide channel name.
+13) Click on "Custom slack app bot user".
+14) Test the connection by clicking on "Test Connection" option.
+15) Add below post build actions to the pipeline.
+pipeline {
+     post {
+        success {
+            slackSend channel: '#alerting',
+                      color: 'good',
+                      message: "✔️ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} completed successfully."
+        }
+
+        failure {
+            slackSend channel: '#alerting',
+                      color: 'danger',
+                      message: "❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER} failed.\nCheck console output: ${env.BUILD_URL}"
+        }
+
+        unstable {
+            slackSend channel: '#alerting',
+                      color: 'warning',
+                      message: "⚠️ UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER} returned unstable status."
+        }
+
+        aborted {
+            slackSend channel: '#alerting',
+                      color: '#808080',
+                      message: "⛔ ABORTED: ${env.JOB_NAME} #${env.BUILD_NUMBER} was aborted."
+        }
+
+        always {
+            slackSend channel: '#alerting',
+                      color: '#439FE0',
+                      message: "ℹ️ Build finished: `${env.JOB_NAME} #${env.BUILD_NUMBER}`"
+        }
+    }
+}
+
+=======================================================================================================================================
+#DOWNSTREAM PIPELINE
+
+pipeline {
+    agent any
+    environment {
+        GITHUB_TOKEN=credentials("github-token")
+    }
+    parameters {
+        string(name: "App_Name", description: "application name that need to be deployed")
+        string(name: "App_Version", description: "version of the application that need to be deployed")
+    }
+    stages {
+        stage("cloning repo") {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/shivagande26/Kubernetes-ArgoCD.git']])
+            }
+        }
+        stage("updating image version in a file") {
+            steps {
+                sh """
+                  echo "-------- Updating File Content --------"
+                  cd "${params.App_Name}"
+                  sed -i 's/image:.*/image: 8072388539\\/datastore:${params.App_Version}/g' "${params.App_Name}".yaml
+                  echo "-------- File Content Updated Successfully --------"
+                """
+            }
+        }
+        stage("pushing code to github") {
+            steps {
+                sh """
+                  echo "-------- Pushing Changes To GitHub --------"
+                  git add .
+                  git commit -am "docker image updated"
+                  git push https://$GITHUB_TOKEN@github.com/shivagande26/Kubernetes-ArgoCD.git HEAD:main
+                  echo "-------- Pushed Changes Successfully --------"
+                """
+            }
+        }
+     }
+}
+====================================================================================================================================
+DEVOPS REALTIME PROBLEMS
+
+1]If RDS and Eks cluster are created in different vpcs we can make communication between them using VPC peering
+If they have same CIDR blocks they cannot communicate or connect For this we can delete old cluster and create new clusters.
+2]create container config error - it comes when config map deployed before po deployment
+3]pods pending - Pods go to pending state when resources are not available or not sufficient & And sometimes PVC used by pod is in pending state For this problem increase the resources
+4]pod restarts(Crashloop) - It comes when problem is in application Within a container of a pod and And problem with liveness probes that's why kubelet restarts pods for this problem check the logs
+5] To cheque Prometheus is collecting data or not go to query inspector And see the Jason data If it was present It was collecting logs
+6] Up metric used to know services is up or not[up=1&down=0]
+7]WE NEED TO CHANGE AWS KMS KEYS INTO CUSTOM KMS OF AN EXISTING SERVER WITHOUT LOSS OS DATA
+create a snapshot
+aws managed KMS copy to another snapshot and another snapshot execute with custom KMS
+create volumes with custom managed KMS keys
+update launch template with their volumes
+EBS Volumes Encryption with Custom KMS key task:
+We can achieve the custom KMS key encryption for EBS volumes in two ways:
+first create custom KMS key in aws (here ebs-kms I have created).
+Manual Process:
+1. take snapshot of the ebs volumes (save them in the same region of the ec2 instances)
+2. create volume from this snapshot, at the time, select the Custom KMS at Encryption section like in the 2nd screenshot.
+3. attach this volume to ec2 instance.
+ASG - Launch Template:
+1. Take AMI of the  ec2 instance with additional attached volumes.
+2. Update Launch template with custom KMS keys of the volumes at the Storage Volumes section.
+3. Once ASG is created a new instance with this LT, all volumes are encrypted with custom KMS key. 
+
+======================================================================================================================================
+DEVOPS TASKS
+Shiva:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: init-pod
+spec:
+  containers:
+    - name: myapp
+      image: nginx
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html/
+          name: db-store
+  initContainers:
+    - name: webapp
+      image: 8072388539/k8s-init-container:v1.0
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          value: <access_key_id>
+        - name: AWS_SECRET_ACCESS_KEY
+          value: <secret_access_key>
+        - name: S3_BUCKET_NAME
+          value: k8s-init-container-testing
+      volumeMounts:
+        - mountPath: /data
+          name: db-store
+  volumes:
+    - name: db-store
+      hostPath:
+        path: /data
+
+Below is going to be our Dockerfile for cronjob
+
+FROM amazonlinux
+MAINTAINER shiva
+RUN yum update -y
+RUN yum -y install python3-pip
+RUN pip3 install boto3
+RUN pip3 install requests
+RUN yum install unzip -y
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
+ENV GOLD_API_ACCESS_TOKEN=goldapi-5z18ld4gkwkcydf4-io
+COPY config /root/.aws/
+COPY credentials /root/.aws/
+
+COPY goldprice.py .
+CMD ["python3","goldprice.py"]
+
+Here is the python code for it.
+
+import requests
+import boto3
+import os
+
+access_token = os.environ['GOLD_API_ACCESS_TOKEN']
+
+headers = {"x-access-token": goldapi-5z18ld4gkwkcydf4-io}
+response = requests.get("https://www.goldapi.io/api/XAU/USD", headers=headers)
+json_out = response.json()
+
+output = "24k Gold: "+str(json_out["price_gram_24k"])+"\n22k Gold: "+str(json_out["price_gram_22k"])+"\n21k Gold: "+str(json_out["price_gram_21k"])+"\n20k Gold: "+str(json_out["price_gram_20k"])+"\n18k Gold: "+str(json_out["price_gram_18k"])+"\n16k Gold: "+str(json_out["price_gram_16k"])+"\n14k Gold: "+str(json_out["price_gram_14k"])+"\n10k Gold: "+str(json_out["price_gram_10k"])
+
+sns_client = boto3.client("sns")
+response = sns_client.publish(
+    TopicArn='arn:aws:sns:us-east-1:225989358737:gold-sns',
+    Message=output,
+    Subject='Indian Gold Market Prices',
+)
+
+if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+    print("Email Sent Successfully.")
+
+Here is the manifest file
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: test
+spec:
+  schedule: "* * * * *" #every minute
+  # 0 8 * * *
+  # permission to run concurrent jobs that are allowed to run at any given time.
+  # allowed values:
+  # Allow(default) -> to allow the concurrent execution of jobs.
+  # Forbid -> restricts the job until the old job gets completed.
+  # Replace -> stops the currently running job and creates the new job.
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: gold-cont
+              image: gold:v1
+#              image: busybox
+#              command: [ "sh", "-c", "sleep 10" ]
+              env:
+                - name: GOLD_API_ACCESS_TOKEN
+                  value: goldapi-5z18ld4gkwkcydf4-io
+          restartPolicy: OnFailure
+      backoffLimit: 3
+
+[default]
+region = us-east-1
+
+[default]
+aws_access_key_id = AKIATJHQD6SIX2J4Z6YF
+aws_secret_access_key = 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
+
+
+
+
+CRON JOB DOCUMENTS
+INIT CONTAINERS
+
+==========================================================================================================================================
+PARELLEL BUILDS:
+pipeline {
+  stages {
+    stage("test") {
+      parallel {
+        stage("p-1st-stage") {
+          steps {
+            sh """
+              sleep 300
+            """
+          }
+        }
+        stage("p-2nd-stage") {
+          steps {
+            sh """
+              sleep 500
+            """
+          }
+        }
+      }
+    }
+    stage("demo") {
+      steps {
+        sh """
+           echo "serial stage."
+        """
+      }
+    }
+  }
+}
+
+
+======================================================================================================================================
+LAMBDA CODE FOR AWS-2 PROJECT (KRISHNA)
+
+import boto3
+
+def lambda_handler(event, context):
+    try:
+        print(event)
+
+        bucket_name = event['Records'][0]['s3']['bucket']['name']
+        object_key = event['Records'][0]['s3']['object']['key']
+
+        ec2 = boto3.client('ec2')
+        ssm = boto3.client('ssm')
+
+        s3url = f"s3://{bucket_name}/{object_key}"
+        print(f"S3 URL: {s3url}")
+
+        ec2_instances = ec2.describe_instances(
+            Filters=[
+                {
+                    'Name': 'tag:AppName',
+                    'Values': ['WebServer']
+                }
+            ]
+        )
+
+        instances = [
+            instance['InstanceId']
+            for reservation in ec2_instances['Reservations']
+            for instance in reservation['Instances']
+        ]
+
+        # Safety check
+        if not instances:
+            print("No instances found with tag AppName=WebServer")
+            return {"statusCode": 404, "body": "No instances found"}
+        else:
+            print(f"Target Instances: {instances}")
+
+        # SSM command: Send S3 URL to document
+        response = ssm.send_command(
+            InstanceIds=instances,
+            DocumentName="website-auto-deloyment",  # Correct document name
+            Parameters={
+                "S3Url": [s3url]   # full S3 URL passed here
+            },
+        )
+
+        command_id = response["Command"]["CommandId"]
+        print(f"SSM Command Response: {response}")
+
+        return {
+            "statusCode": 200,
+            "body": f"SSM command sent successfully. CommandId: {command_id}"
+        }
+
+    except ssm.exceptions.InvalidInstanceId as e:
+        return {
+            "statusCode": 400,
+            "body": f"Invalid instance ID: {str(e)}"
+        }
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": f"Error sending SSM command: {str(e)}"
+        }
+
+lambda policy:
+--------------
+=================================================================================================================================
+IAM ROLE POLICY FOR AWS-2 PROJECT (KRISHNA)
+
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    },
+
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeTags"
+      ],
+      "Resource": "*"
+    },
+
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:SendCommand",
+        "ssm:GetCommandInvocation"
+      ],
+      "Resource": "*"
+    },
+
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:DescribeDocument",
+        "ssm:GetDocument"
+      ],
+      "Resource": "arn:aws:ssm:*:*:document/website-auto-deloyment"
+    },
+
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": "arn:aws:s3:::myprofile-static-bucket /*"
+    },
+
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::myprofile-static-bucket "
+    }
+  ]
+}
+
+
+
+
+
+===================================================================================================================================
+
+====================================================================================================================================
+
+======================================================================================================================================
+
+====================================================================================================================================
+
+======================================================================================================================================
